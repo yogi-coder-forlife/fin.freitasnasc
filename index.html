@@ -167,6 +167,44 @@ input:focus, select:focus { border-color: var(--accent); }
 .val-pos { color: var(--green); }
 .val-neg { color: var(--red); }
 
+/* ── COMPARATIVO MÊS ANTERIOR ────────────────── */
+.comp-ant { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.comp-ant .badge {
+  font-size: 10px; font-weight: 600; padding: 2px 6px;
+  border-radius: 6px; display: inline-flex; align-items: center; gap: 2px;
+}
+.badge-up   { background: rgba(224,92,92,.15); color: var(--red); }
+.badge-down { background: rgba(76,175,125,.15); color: var(--green); }
+.badge-up-inv   { background: rgba(76,175,125,.15); color: var(--green); }
+.badge-down-inv { background: rgba(224,92,92,.15); color: var(--red); }
+.badge-zero { background: rgba(138,132,128,.1); color: var(--ink3); }
+
+/* ── INDICADORES AVANÇADOS ───────────────────── */
+.indicadores-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.indicador-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 10px; text-align: center;
+}
+.indicador-lbl { font-size: 9px; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.indicador-val { font-family: 'Playfair Display', serif; font-size: 18px; }
+.indicador-sub { font-size: 10px; color: var(--ink3); margin-top: 2px; }
+
+/* ── GRÁFICO DE LINHA (canvas) ───────────────── */
+.grafico-container {
+  position: relative; width: 100%; height: 200px;
+  margin-bottom: 8px;
+}
+.grafico-container canvas { width: 100% !important; height: 100% !important; }
+.grafico-legenda {
+  display: flex; gap: 14px; justify-content: center;
+  font-size: 11px; color: var(--ink2); margin-top: 6px;
+}
+.legenda-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 4px; vertical-align: middle;
+}
+
+/* ── RANKING CATEGORIAS ──────────────────────── */
 .lista-cat .cat-row {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px 0; border-bottom: 1px solid var(--border);
@@ -177,6 +215,7 @@ input:focus, select:focus { border-color: var(--accent); }
 .cat-val  { font-family: 'Playfair Display', serif; }
 .cat-bar  { height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px; }
 .cat-bar-fill { height: 4px; border-radius: 2px; background: var(--accent); transition: width .5s; }
+.cat-variacao { font-size: 10px; font-weight: 600; margin-left: 6px; }
 
 /* ── FILTROS ──────────────────────────────────── */
 .filtros-row {
@@ -259,7 +298,6 @@ input:focus, select:focus { border-color: var(--accent); }
 .meta-fill.over { background: linear-gradient(90deg, var(--red), #FF8A80); }
 .meta-sub { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink3); }
 
-/* CONFIG METAS */
 .config-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .config-row span { font-size: 18px; }
 .config-row label { flex: 1; font-size: 13px; font-weight: 500; color: var(--ink); }
@@ -292,7 +330,7 @@ input:focus, select:focus { border-color: var(--accent); }
 .btn-sync { background: var(--accent); color: #0F0F0F; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 .btn-sync:disabled { opacity: .4; cursor: default; }
 
-/* ERRO DE CONEXÃO */
+/* ERRO */
 .erro-conexao {
   background: #2A1A1A; border: 1px solid #5C2A2A; border-radius: 12px;
   padding: 20px 16px; text-align: center; margin-bottom: 12px;
@@ -319,7 +357,6 @@ input:focus, select:focus { border-color: var(--accent); }
 
 <!-- ══════════ LANÇAMENTO ══════════ -->
 <div class="secao ativa" id="sec-lancamento">
-
   <div class="offline-bar hidden" id="offline-bar">
     <div class="offline-info">
       <div class="offline-dot" id="offline-dot"></div>
@@ -331,62 +368,28 @@ input:focus, select:focus { border-color: var(--accent); }
   <div class="card">
     <div class="card-title">Novo lançamento</div>
     <input class="valor-input" type="text" id="valor" placeholder="R$ 0,00" inputmode="numeric">
-
     <div class="chips" id="chips-natureza">
       <div class="chip sel-despesa" data-val="Despesa" onclick="selNatureza(this)">Despesa</div>
       <div class="chip" data-val="Receita" onclick="selNatureza(this)">Receita</div>
       <div class="chip" data-val="Investimento" onclick="selNatureza(this)">Investimento</div>
       <div class="chip" data-val="Transferência" onclick="selNatureza(this)">Transferência</div>
     </div>
-
     <div class="row2">
       <select id="categoria" onchange="atualizarSub()"></select>
       <select id="subcategoria"></select>
     </div>
-
     <div class="row2">
       <input type="date" id="data">
-      <select id="pessoa">
-        <option>Kauan</option>
-        <option>Esposa</option>
-      </select>
+      <select id="pessoa"><option>Kauan</option><option>Esposa</option></select>
     </div>
-
     <div class="row2">
-      <select id="forma" onchange="toggleParcelas()">
-        <option>Pix</option>
-        <option>Débito</option>
-        <option>Crédito</option>
-      </select>
-      <select id="banco">
-        <option>Nubank</option>
-        <option>Inter</option>
-        <option>Itaú</option>
-        <option>Caixa</option>
-        <option>BB</option>
-        <option>C6</option>
-        <option>Outro</option>
-      </select>
+      <select id="forma" onchange="toggleParcelas()"><option>Pix</option><option>Débito</option><option>Crédito</option></select>
+      <select id="banco"><option>Nubank</option><option>Inter</option><option>Itaú</option><option>Caixa</option><option>BB</option><option>C6</option><option>Outro</option></select>
     </div>
-
     <div class="row2 hidden" id="parcelasBox">
-      <select id="parcelas">
-        <option value="1">1x</option>
-        <option value="2">2x</option>
-        <option value="3">3x</option>
-        <option value="4">4x</option>
-        <option value="5">5x</option>
-        <option value="6">6x</option>
-        <option value="7">7x</option>
-        <option value="8">8x</option>
-        <option value="9">9x</option>
-        <option value="10">10x</option>
-        <option value="11">11x</option>
-        <option value="12">12x</option>
-      </select>
+      <select id="parcelas"><option value="1">1x</option><option value="2">2x</option><option value="3">3x</option><option value="4">4x</option><option value="5">5x</option><option value="6">6x</option><option value="7">7x</option><option value="8">8x</option><option value="9">9x</option><option value="10">10x</option><option value="11">11x</option><option value="12">12x</option></select>
       <div></div>
     </div>
-
     <button class="btn-salvar" id="btnSalvar" onclick="salvarLancamento()">Salvar</button>
   </div>
 </div>
@@ -406,13 +409,63 @@ input:focus, select:focus { border-color: var(--accent); }
     <button class="btn-retry" onclick="recarregarDados()">Tentar novamente</button>
   </div>
 
+  <!-- Resumo do mês com comparativo -->
   <div class="resumo-grid">
-    <div class="resumo-item"><div class="resumo-label">Receita</div><div class="resumo-valor val-pos" id="p-receita">—</div></div>
-    <div class="resumo-item"><div class="resumo-label">Despesa</div><div class="resumo-valor val-neg" id="p-despesa">—</div></div>
-    <div class="resumo-item"><div class="resumo-label">Investido</div><div class="resumo-valor" id="p-investido" style="color:var(--purple)">—</div></div>
-    <div class="resumo-item"><div class="resumo-label">Saldo</div><div class="resumo-valor" id="p-saldo">—</div></div>
+    <div class="resumo-item">
+      <div class="resumo-label">Receita</div>
+      <div class="resumo-valor val-pos" id="p-receita">—</div>
+      <div class="comp-ant" id="p-receita-comp"></div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-label">Despesa</div>
+      <div class="resumo-valor val-neg" id="p-despesa">—</div>
+      <div class="comp-ant" id="p-despesa-comp"></div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-label">Investido</div>
+      <div class="resumo-valor" id="p-investido" style="color:var(--purple)">—</div>
+      <div class="comp-ant" id="p-investido-comp"></div>
+    </div>
+    <div class="resumo-item">
+      <div class="resumo-label">Saldo</div>
+      <div class="resumo-valor" id="p-saldo">—</div>
+      <div class="comp-ant" id="p-saldo-comp"></div>
+    </div>
   </div>
 
+  <!-- Indicadores avançados -->
+  <div class="indicadores-grid">
+    <div class="indicador-item">
+      <div class="indicador-lbl">Tx Poupança</div>
+      <div class="indicador-val" id="ind-poupanca">—</div>
+      <div class="indicador-sub">da receita</div>
+    </div>
+    <div class="indicador-item">
+      <div class="indicador-lbl">Tx Investim.</div>
+      <div class="indicador-val" id="ind-investimento" style="color:var(--purple)">—</div>
+      <div class="indicador-sub">da receita</div>
+    </div>
+    <div class="indicador-item">
+      <div class="indicador-lbl">Compromet.</div>
+      <div class="indicador-val" id="ind-comprometimento">—</div>
+      <div class="indicador-sub" id="ind-comp-sub">parcelas futuras</div>
+    </div>
+  </div>
+
+  <!-- Gráfico evolução 6 meses -->
+  <div class="card">
+    <div class="card-title">Evolução — últimos 6 meses</div>
+    <div class="grafico-container">
+      <canvas id="graficoEvolucao"></canvas>
+    </div>
+    <div class="grafico-legenda">
+      <span><span class="legenda-dot" style="background:var(--green)"></span>Receita</span>
+      <span><span class="legenda-dot" style="background:var(--red)"></span>Despesa</span>
+      <span><span class="legenda-dot" style="background:var(--accent)"></span>Saldo</span>
+    </div>
+  </div>
+
+  <!-- Ranking categorias com variação -->
   <div class="card">
     <div class="card-title">Despesas por categoria</div>
     <div class="lista-cat" id="p-categorias"><div class="vazio">Carregando...</div></div>
@@ -503,7 +556,6 @@ input:focus, select:focus { border-color: var(--accent); }
 
 </main>
 
-<!-- ══════════ NAV ══════════ -->
 <nav class="nav-bar">
   <button class="nav-item ativo" onclick="navegar('lancamento',this)"><span class="nav-icon">＋</span>Novo</button>
   <button class="nav-item" onclick="navegar('painel',this)"><span class="nav-icon">📊</span>Painel</button>
@@ -516,28 +568,23 @@ input:focus, select:focus { border-color: var(--accent); }
 
 <script>
 // ══════════════════════════════════════════════
-//  CONFIGURAÇÃO — SUBSTITUA PELOS SEUS VALORES
+//  CONFIGURAÇÃO
 // ══════════════════════════════════════════════
-const GAS_URL   = "https://script.google.com/macros/s/AKfycbzk1xSp7oJCC6UDeRHJigj5u1POjXMKZj3N0ElxHxp_NGKcEFnYOm8kcYz_HRQd77pu/exec";
-const GAS_TOKEN = "7df2f5ff-fd09-4123-a316-fb4f08b2fd3b";
-// GAS_URL  → URL do Web App após implantar o backend.gs
-// GAS_TOKEN → deve ser idêntico ao TOKEN_ACESSO no backend.gs
+const GAS_URL   = "https://script.google.com/macros/s/SEU-ID/exec";
+const GAS_TOKEN = "SUBSTITUA-POR-UM-TOKEN-ALEATORIO-SEGURO";
 
 // ══════════════════════════════════════════════
-//  API — comunicação com o backend GAS via fetch
+//  API
 // ══════════════════════════════════════════════
 async function api(acao, dados, filtros) {
   const body = { token: GAS_TOKEN, acao };
   if (dados)   body.dados   = dados;
   if (filtros) body.filtros = filtros;
-
   const res = await fetch(GAS_URL, {
-    method:  "POST",
-    redirect: "follow",
+    method: "POST", redirect: "follow",
     headers: { "Content-Type": "text/plain" },
-    body:    JSON.stringify(body)
+    body: JSON.stringify(body)
   });
-
   if (!res.ok) throw new Error("HTTP " + res.status);
   return await res.json();
 }
@@ -547,63 +594,52 @@ async function api(acao, dados, filtros) {
 // ══════════════════════════════════════════════
 const Estado = {
   natureza: "Despesa",
-  dadosMes: null,
-  dadosCartao: null,
-  dadosPatrimonio: null,
+  dadosMes: null, dadosMesAnterior: null, dadosEvolucao: null,
+  dadosCartao: null, dadosPatrimonio: null,
   metas: {},
-  filtros: { mes: null, ano: null, pessoa: "Ambos", tipo: "Todos", categoria: "Todas", forma: "Todas" },
-  carregando: false,
-  erroConexao: false
+  filtros: { mes: null, ano: null, pessoa: "Ambos" },
+  carregando: false
 };
-
-// Carrega metas do localStorage com tratamento de erro
 try { Estado.metas = JSON.parse(localStorage.getItem("metas_familias") || "{}"); } catch(e) { Estado.metas = {}; }
 
 // ══════════════════════════════════════════════
-//  CATEGORIAS (v2.01 — inclui Educação, Pets, Assinaturas)
+//  CATEGORIAS (v2.02)
 // ══════════════════════════════════════════════
 const CATEGORIAS = {
   "Despesa": {
-    "Alimentação":  ["Supermercado","Delivery","Comer fora"],
-    "Moradia":      ["Aluguel","Água","Luz","Internet","Manutenção"],
-    "Transporte":   ["Gasolina","Uber/99","Estacionamento"],
-    "Saúde":        ["Farmácia","Consulta","Plano"],
-    "Pessoal":      ["Roupa","Higiene","Beleza"],
-    "Lazer":        ["Streaming","Viagem","Restaurante"],
-    "Educação":     ["Curso","Livro","Material escolar"],
-    "Pets":         ["Ração","Veterinário","Petshop"],
-    "Assinaturas":  ["Spotify","iFood+","Academia","Outros"],
-    "Outros":       ["Outros"]
+    "Alimentação":["Supermercado","Delivery","Comer fora"],
+    "Moradia":["Aluguel","Água","Luz","Internet","Manutenção"],
+    "Transporte":["Gasolina","Uber/99","Estacionamento"],
+    "Saúde":["Farmácia","Consulta","Plano"],
+    "Pessoal":["Roupa","Higiene","Beleza"],
+    "Lazer":["Streaming","Viagem","Restaurante"],
+    "Educação":["Curso","Livro","Material escolar"],
+    "Pets":["Ração","Veterinário","Petshop"],
+    "Assinaturas":["Spotify","iFood+","Academia","Outros"],
+    "Outros":["Outros"]
   },
-  "Receita":       { "Receita":["Salário","Extra","Rendimentos","Freelance"] },
-  "Investimento":  { "Investimentos":["Renda fixa","Renda variável","Tesouro","Poupança"] },
-  "Transferência": { "Transferência":["Entre contas","Reembolso"] }
+  "Receita":{"Receita":["Salário","Extra","Rendimentos","Freelance"]},
+  "Investimento":{"Investimentos":["Renda fixa","Renda variável","Tesouro","Poupança"]},
+  "Transferência":{"Transferência":["Entre contas","Reembolso"]}
 };
 
 function iniciarCategorias() {
-  const mapa   = CATEGORIAS[Estado.natureza] || CATEGORIAS["Despesa"];
-  const selCat = document.getElementById("categoria");
-  selCat.innerHTML = "";
-  Object.keys(mapa).forEach(c => {
-    const o = document.createElement("option");
-    o.value = c; o.text = c; selCat.appendChild(o);
-  });
+  const mapa = CATEGORIAS[Estado.natureza] || CATEGORIAS["Despesa"];
+  const sel = document.getElementById("categoria");
+  sel.innerHTML = "";
+  Object.keys(mapa).forEach(c => { const o = document.createElement("option"); o.value=c; o.text=c; sel.appendChild(o); });
   atualizarSub();
 }
-
 function atualizarSub() {
-  const mapa   = CATEGORIAS[Estado.natureza] || CATEGORIAS["Despesa"];
-  const selSub = document.getElementById("subcategoria");
-  const cat    = document.getElementById("categoria").value;
-  selSub.innerHTML = "";
-  (mapa[cat] || []).forEach(s => {
-    const o = document.createElement("option");
-    o.value = s; o.text = s; selSub.appendChild(o);
-  });
+  const mapa = CATEGORIAS[Estado.natureza] || CATEGORIAS["Despesa"];
+  const sel = document.getElementById("subcategoria");
+  const cat = document.getElementById("categoria").value;
+  sel.innerHTML = "";
+  (mapa[cat]||[]).forEach(s => { const o = document.createElement("option"); o.value=s; o.text=s; sel.appendChild(o); });
 }
 
 // ══════════════════════════════════════════════
-//  INIT — com tratamento robusto de erros
+//  INIT
 // ══════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded", () => {
   try {
@@ -614,32 +650,24 @@ document.addEventListener("DOMContentLoaded", () => {
     Estado.filtros.mes = hoje.getMonth() + 1;
     Estado.filtros.ano = hoje.getFullYear();
 
-    // Popula filtros de mês e ano
     const selMes = document.getElementById("f-mes");
     const selAno = document.getElementById("f-ano");
-    MN.forEach((m, i) => {
-      const o = document.createElement("option");
-      o.value = i + 1; o.text = m;
-      if (i === hoje.getMonth()) o.selected = true;
-      selMes.appendChild(o);
-    });
-    for (let a = hoje.getFullYear(); a >= hoje.getFullYear() - 3; a--) {
-      const o = document.createElement("option");
-      o.value = a; o.text = a;
-      selAno.appendChild(o);
-    }
+    MN.forEach((m, i) => { const o = document.createElement("option"); o.value=i+1; o.text=m; if(i===hoje.getMonth()) o.selected=true; selMes.appendChild(o); });
+    for (let a = hoje.getFullYear(); a >= hoje.getFullYear()-3; a--) { const o = document.createElement("option"); o.value=a; o.text=a; selAno.appendChild(o); }
 
     iniciarCategorias();
     renderizarConfigMetas();
     atualizarBarraOffline();
 
-    // Carrega dados do backend SEM travar a interface
-    // Usa setTimeout para garantir que o DOM já renderizou
-    setTimeout(() => { recarregarDados(); }, 300);
+    // Máscara de valor
+    document.getElementById("valor").oninput = e => {
+      let v = e.target.value.replace(/\D/g, "");
+      v = (v / 100).toFixed(2).replace(".", ",");
+      e.target.value = "R$ " + v;
+    };
 
-  } catch (e) {
-    console.error("Erro no init:", e);
-  }
+    setTimeout(() => { recarregarDados(); }, 300);
+  } catch (e) { console.error("Erro init:", e); }
 });
 
 // ══════════════════════════════════════════════
@@ -652,7 +680,6 @@ function navegar(id, el) {
   el.classList.add("ativo");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
-
 function subAba(id, el) {
   document.getElementById("sub-credito").classList.add("hidden");
   document.getElementById("sub-patrimonio").classList.add("hidden");
@@ -660,15 +687,13 @@ function subAba(id, el) {
   document.querySelectorAll("#chips-sub .chip").forEach(c => c.className = "chip");
   el.classList.add(id === "credito" ? "sel-credito" : "sel-patrimonio");
 }
-
 function selNatureza(el) {
   document.querySelectorAll("#chips-natureza .chip").forEach(x => x.className = "chip");
   Estado.natureza = el.dataset.val;
-  const cls = { "Despesa":"sel-despesa","Receita":"sel-receita","Investimento":"sel-investimento","Transferência":"sel-transferencia" };
+  const cls = {"Despesa":"sel-despesa","Receita":"sel-receita","Investimento":"sel-investimento","Transferência":"sel-transferencia"};
   el.classList.add(cls[Estado.natureza] || "sel-despesa");
   iniciarCategorias();
 }
-
 function toggleParcelas() {
   document.getElementById("parcelasBox").classList.toggle("hidden", document.getElementById("forma").value !== "Crédito");
 }
@@ -676,184 +701,139 @@ function toggleParcelas() {
 // ══════════════════════════════════════════════
 //  FORMATAÇÃO
 // ══════════════════════════════════════════════
-function fmt(v) {
-  return "R$ " + (v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-// Máscara de valor
-document.addEventListener("DOMContentLoaded", () => {
-  const campo = document.getElementById("valor");
-  if (campo) {
-    campo.oninput = e => {
-      let v = e.target.value.replace(/\D/g, "");
-      v = (v / 100).toFixed(2).replace(".", ",");
-      e.target.value = "R$ " + v;
-    };
-  }
-});
+function fmt(v) { return "R$ " + (v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtPct(v) { return (v||0).toFixed(1) + "%"; }
 
 // ══════════════════════════════════════════════
-//  SALVAR LANÇAMENTO
+//  SALVAR
 // ══════════════════════════════════════════════
 async function salvarLancamento() {
   const btn = document.getElementById("btnSalvar");
-  const valorStr = document.getElementById("valor").value.replace(/[^\d,]/g, "").replace(",", ".");
+  const valorStr = document.getElementById("valor").value.replace(/[^\d,]/g,"").replace(",",".");
   const valor = parseFloat(valorStr);
-
   if (!valor || valor <= 0) { mostrarToast("Informe um valor válido"); return; }
 
   const dados = {
-    data:         document.getElementById("data").value,
-    pessoa:       document.getElementById("pessoa").value,
-    natureza:     Estado.natureza,
-    categoria:    document.getElementById("categoria").value,
+    data: document.getElementById("data").value,
+    pessoa: document.getElementById("pessoa").value,
+    natureza: Estado.natureza,
+    categoria: document.getElementById("categoria").value,
     subcategoria: document.getElementById("subcategoria").value,
-    valor:        valor,
-    forma:        document.getElementById("forma").value,
-    parcelas:     document.getElementById("forma").value === "Crédito" ? document.getElementById("parcelas").value : "0",
-    banco:        document.getElementById("banco").value,
-    _ts:          Date.now().toString()
+    valor: valor,
+    forma: document.getElementById("forma").value,
+    parcelas: document.getElementById("forma").value==="Crédito" ? document.getElementById("parcelas").value : "0",
+    banco: document.getElementById("banco").value,
+    _ts: Date.now().toString()
   };
 
-  btn.disabled = true;
-  setLoading(true);
-
+  btn.disabled = true; setLoading(true);
   try {
-    if (!navigator.onLine) {
-      salvarOffline(dados);
-      mostrarToast("Salvo offline — sincronize depois");
-    } else {
+    if (!navigator.onLine) { salvarOffline(dados); mostrarToast("Salvo offline"); }
+    else {
       const res = await api("salvar", dados);
-      if (res.sucesso) {
-        mostrarToast("Salvo com sucesso!");
-      } else {
-        throw new Error(res.erro || "Erro desconhecido");
-      }
+      if (res.sucesso) mostrarToast("Salvo com sucesso!");
+      else throw new Error(res.erro);
     }
-    // Limpa o campo de valor
     document.getElementById("valor").value = "";
-  } catch (e) {
-    console.error("Erro ao salvar:", e);
-    salvarOffline(dados);
-    mostrarToast("Erro na conexão — salvo offline");
-  } finally {
-    btn.disabled = false;
-    setLoading(false);
-  }
+  } catch (e) { salvarOffline(dados); mostrarToast("Erro — salvo offline"); }
+  finally { btn.disabled = false; setLoading(false); }
 }
 
 // ══════════════════════════════════════════════
 //  OFFLINE / SYNC
 // ══════════════════════════════════════════════
-function getFilaOffline() {
-  try { return JSON.parse(localStorage.getItem("fila_offline") || "[]"); }
-  catch(e) { return []; }
-}
-function salvarOffline(dados) {
-  const fila = getFilaOffline();
-  fila.push(dados);
-  localStorage.setItem("fila_offline", JSON.stringify(fila));
-  atualizarBarraOffline();
-}
+function getFilaOffline() { try { return JSON.parse(localStorage.getItem("fila_offline")||"[]"); } catch(e) { return []; } }
+function salvarOffline(d) { const f=getFilaOffline(); f.push(d); localStorage.setItem("fila_offline",JSON.stringify(f)); atualizarBarraOffline(); }
 function atualizarBarraOffline() {
-  const fila = getFilaOffline();
-  const bar  = document.getElementById("offline-bar");
-  const dot  = document.getElementById("offline-dot");
-  const txt  = document.getElementById("offline-txt");
-  const btn  = document.getElementById("btn-sync");
-
-  if (!bar) return;
-
-  if (fila.length === 0 && navigator.onLine) {
-    bar.classList.add("hidden");
-    return;
-  }
-
+  const fila=getFilaOffline(), bar=document.getElementById("offline-bar"), dot=document.getElementById("offline-dot"), txt=document.getElementById("offline-txt"), btn=document.getElementById("btn-sync");
+  if(!bar) return;
+  if(fila.length===0 && navigator.onLine){ bar.classList.add("hidden"); return; }
   bar.classList.remove("hidden");
-  if (navigator.onLine) {
-    dot.classList.add("online");
-    txt.textContent = fila.length + " lançamento(s) pendente(s)";
-    btn.disabled = false;
-  } else {
-    dot.classList.remove("online");
-    txt.textContent = "Sem conexão · " + fila.length + " pendente(s)";
-    btn.disabled = true;
-  }
+  if(navigator.onLine){ dot.classList.add("online"); txt.textContent=fila.length+" pendente(s)"; btn.disabled=false; }
+  else { dot.classList.remove("online"); txt.textContent="Sem conexão · "+fila.length+" pendente(s)"; btn.disabled=true; }
 }
-
 async function sincronizar() {
-  const fila = getFilaOffline();
-  if (!fila.length) return;
-  setLoading(true);
+  const fila=getFilaOffline(); if(!fila.length) return; setLoading(true);
   try {
-    const res = await api("salvarLote", fila);
-    if (res.sucesso) {
-      localStorage.setItem("fila_offline", "[]");
-      const msg = (res.total || fila.length) + " sincronizado(s)";
-      mostrarToast(msg + (res.ignorados ? " · " + res.ignorados + " duplicado(s) ignorado(s)" : ""));
-      atualizarBarraOffline();
-      recarregarDados();
-    } else {
-      mostrarToast("Erro: " + (res.erro || "falha na sincronização"));
-    }
-  } catch (e) {
-    mostrarToast("Erro de conexão");
-  } finally {
-    setLoading(false);
-  }
+    const res = await api("salvarLote",fila);
+    if(res.sucesso){ localStorage.setItem("fila_offline","[]"); mostrarToast((res.total||fila.length)+" sincronizado(s)"+(res.ignorados?" · "+res.ignorados+" duplicado(s)":"")); atualizarBarraOffline(); recarregarDados(); }
+    else mostrarToast("Erro: "+(res.erro||"falha"));
+  } catch(e){ mostrarToast("Erro de conexão"); } finally { setLoading(false); }
 }
-
-window.addEventListener("online",  atualizarBarraOffline);
+window.addEventListener("online", atualizarBarraOffline);
 window.addEventListener("offline", atualizarBarraOffline);
 
 // ══════════════════════════════════════════════
-//  CARREGAR DADOS — com proteção contra travamento
+//  CARREGAR DADOS
 // ══════════════════════════════════════════════
 function aplicarFiltros() {
-  Estado.filtros.mes    = parseInt(document.getElementById("f-mes").value);
-  Estado.filtros.ano    = parseInt(document.getElementById("f-ano").value);
+  Estado.filtros.mes = parseInt(document.getElementById("f-mes").value);
+  Estado.filtros.ano = parseInt(document.getElementById("f-ano").value);
   Estado.filtros.pessoa = document.getElementById("f-pessoa").value;
   recarregarDados();
 }
 
-async function recarregarDados() {
-  if (Estado.carregando) return; // Evita chamadas simultâneas
-  Estado.carregando = true;
-  setLoading(true);
+function getMesAnterior(mes, ano) {
+  let m = mes - 1, a = ano;
+  if (m < 1) { m = 12; a--; }
+  return { mes: m, ano: a };
+}
 
+async function recarregarDados() {
+  if (Estado.carregando) return;
+  Estado.carregando = true; setLoading(true);
   const erroPainel = document.getElementById("erro-painel");
 
   try {
-    // Carrega tudo em paralelo com timeout de 30s
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 30000));
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error("Timeout")), 30000));
+    const ant = getMesAnterior(Estado.filtros.mes, Estado.filtros.ano);
+    const filtrosAnt = { ...Estado.filtros, mes: ant.mes, ano: ant.ano };
 
-    const [dadosMes, dadosCartao, dadosPatrimonio] = await Promise.race([
+    const [dadosMes, dadosMesAnt, dadosEvolucao, dadosCartao, dadosPatrimonio] = await Promise.race([
       Promise.all([
-        api("getDadosMes",    null, Estado.filtros).catch(e => null),
+        api("getDadosMes", null, Estado.filtros).catch(e => null),
+        api("getDadosMes", null, filtrosAnt).catch(e => null),
+        api("getEvolucao6m", null, Estado.filtros).catch(e => null),
         api("getDadosCartao", null, Estado.filtros).catch(e => null),
-        api("getPatrimonio",  null, Estado.filtros).catch(e => null)
+        api("getPatrimonio", null, Estado.filtros).catch(e => null)
       ]),
       timeout
     ]);
 
-    Estado.dadosMes       = dadosMes;
-    Estado.dadosCartao    = dadosCartao;
+    Estado.dadosMes = dadosMes;
+    Estado.dadosMesAnterior = dadosMesAnt;
+    Estado.dadosEvolucao = dadosEvolucao;
+    Estado.dadosCartao = dadosCartao;
     Estado.dadosPatrimonio = dadosPatrimonio;
 
     if (erroPainel) erroPainel.classList.add("hidden");
 
     renderizarPainel();
+    renderizarIndicadores();
+    renderizarGrafico();
     renderizarCartao();
     renderizarPatrimonio();
     renderizarMetas();
 
   } catch (e) {
-    console.error("Erro ao carregar dados:", e);
+    console.error("Erro carregar:", e);
     if (erroPainel) erroPainel.classList.remove("hidden");
-  } finally {
-    Estado.carregando = false;
-    setLoading(false);
-  }
+  } finally { Estado.carregando = false; setLoading(false); }
+}
+
+// ══════════════════════════════════════════════
+//  BADGE COMPARATIVO
+// ══════════════════════════════════════════════
+function badgeVariacao(atual, anterior, invertido) {
+  if (!anterior || anterior === 0) return '<span class="badge badge-zero">—</span>';
+  const pct = ((atual - anterior) / anterior * 100);
+  const abs = Math.abs(pct).toFixed(0);
+  if (Math.abs(pct) < 1) return '<span class="badge badge-zero">≈</span>';
+  const sobe = pct > 0;
+  let cls;
+  if (invertido) cls = sobe ? "badge-up-inv" : "badge-down-inv"; // para receita, subir é bom
+  else cls = sobe ? "badge-up" : "badge-down"; // para despesa, subir é ruim
+  return `<span class="badge ${cls}">${sobe?"▲":"▼"} ${abs}%</span>`;
 }
 
 // ══════════════════════════════════════════════
@@ -862,34 +842,193 @@ async function recarregarDados() {
 function renderizarPainel() {
   const d = Estado.dadosMes;
   if (!d) return;
+  const a = Estado.dadosMesAnterior;
 
-  document.getElementById("p-receita").textContent  = fmt(d.receita);
-  document.getElementById("p-despesa").textContent  = fmt(d.despesa);
+  document.getElementById("p-receita").textContent = fmt(d.receita);
+  document.getElementById("p-despesa").textContent = fmt(d.despesa);
   document.getElementById("p-investido").textContent = fmt(d.investido);
 
-  const saldo = (d.receita || 0) - (d.despesa || 0) - (d.investido || 0);
+  const saldo = (d.receita||0) - (d.despesa||0) - (d.investido||0);
   const elSaldo = document.getElementById("p-saldo");
   elSaldo.textContent = fmt(saldo);
   elSaldo.className = "resumo-valor " + (saldo >= 0 ? "val-pos" : "val-neg");
 
-  // Categorias
-  const cont = document.getElementById("p-categorias");
-  if (!d.categorias || !d.categorias.length) {
-    cont.innerHTML = '<div class="vazio">Sem lançamentos neste período</div>';
-    return;
+  // Comparativos com mês anterior
+  if (a) {
+    const saldoAnt = (a.receita||0) - (a.despesa||0) - (a.investido||0);
+    document.getElementById("p-receita-comp").innerHTML = badgeVariacao(d.receita, a.receita, true);
+    document.getElementById("p-despesa-comp").innerHTML = badgeVariacao(d.despesa, a.despesa, false);
+    document.getElementById("p-investido-comp").innerHTML = badgeVariacao(d.investido, a.investido, true);
+    document.getElementById("p-saldo-comp").innerHTML = badgeVariacao(saldo, saldoAnt, true);
   }
+
+  // Categorias com variação
+  const cont = document.getElementById("p-categorias");
+  if (!d.categorias || !d.categorias.length) { cont.innerHTML = '<div class="vazio">Sem lançamentos neste período</div>'; return; }
+
+  const catAntMap = {};
+  if (a && a.categorias) a.categorias.forEach(c => { catAntMap[c.nome] = c.valor; });
 
   const max = Math.max(...d.categorias.map(c => c.valor));
   cont.innerHTML = d.categorias.map(c => {
     const pct = max > 0 ? (c.valor / max * 100) : 0;
+    const antVal = catAntMap[c.nome] || 0;
+    let varHtml = "";
+    if (antVal > 0) {
+      const varPct = ((c.valor - antVal) / antVal * 100);
+      const absVar = Math.abs(varPct).toFixed(0);
+      if (Math.abs(varPct) >= 1) {
+        const cls = varPct > 0 ? "val-neg" : "val-pos";
+        varHtml = `<span class="cat-variacao ${cls}">${varPct>0?"▲":"▼"}${absVar}%</span>`;
+      }
+    } else if (antVal === 0 && c.valor > 0) {
+      varHtml = '<span class="cat-variacao" style="color:var(--ink3)">novo</span>';
+    }
     return `<div class="cat-row">
       <div style="flex:1">
-        <div class="cat-nome">${c.nome}</div>
+        <div class="cat-nome">${c.nome}${varHtml}</div>
         <div class="cat-bar"><div class="cat-bar-fill" style="width:${pct}%"></div></div>
       </div>
       <div class="cat-val val-neg">${fmt(c.valor)}</div>
     </div>`;
   }).join("");
+}
+
+// ══════════════════════════════════════════════
+//  INDICADORES AVANÇADOS
+// ══════════════════════════════════════════════
+function renderizarIndicadores() {
+  const d = Estado.dadosMes;
+  const c = Estado.dadosCartao;
+  if (!d) return;
+
+  // Taxa de poupança = (receita - despesa) / receita
+  const txPoup = d.receita > 0 ? ((d.receita - d.despesa) / d.receita * 100) : 0;
+  const elPoup = document.getElementById("ind-poupanca");
+  elPoup.textContent = fmtPct(txPoup);
+  elPoup.style.color = txPoup >= 20 ? "var(--green)" : txPoup >= 10 ? "var(--accent)" : "var(--red)";
+
+  // Taxa de investimento
+  const txInv = d.receita > 0 ? (d.investido / d.receita * 100) : 0;
+  document.getElementById("ind-investimento").textContent = fmtPct(txInv);
+
+  // Comprometimento com parcelas futuras
+  if (c && c.fluxoParcelas && c.fluxoParcelas.length > 0) {
+    const totalFuturo = c.fluxoParcelas.reduce((s, f) => s + f.valor, 0);
+    const mediaFutura = totalFuturo / c.fluxoParcelas.length;
+    const txComp = d.receita > 0 ? (mediaFutura / d.receita * 100) : 0;
+    const elComp = document.getElementById("ind-comprometimento");
+    elComp.textContent = fmtPct(txComp);
+    elComp.style.color = txComp <= 15 ? "var(--green)" : txComp <= 30 ? "var(--accent)" : "var(--red)";
+    document.getElementById("ind-comp-sub").textContent = fmt(mediaFutura) + "/mês";
+  } else {
+    document.getElementById("ind-comprometimento").textContent = "0%";
+    document.getElementById("ind-comprometimento").style.color = "var(--green)";
+  }
+}
+
+// ══════════════════════════════════════════════
+//  GRÁFICO DE EVOLUÇÃO — Canvas puro
+// ══════════════════════════════════════════════
+function renderizarGrafico() {
+  const d = Estado.dadosEvolucao;
+  const canvas = document.getElementById("graficoEvolucao");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // Ajusta resolução do canvas
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * 2;
+  canvas.height = rect.height * 2;
+  ctx.scale(2, 2);
+  const W = rect.width, H = rect.height;
+
+  // Limpa
+  ctx.clearRect(0, 0, W, H);
+
+  if (!d || !d.meses || d.meses.length === 0) {
+    ctx.fillStyle = "#4A4744";
+    ctx.font = "13px Outfit";
+    ctx.textAlign = "center";
+    ctx.fillText("Sem dados suficientes", W/2, H/2);
+    return;
+  }
+
+  const meses = d.meses;
+  const pad = { top: 20, right: 16, bottom: 30, left: 16 };
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  // Calcular escala
+  const allVals = meses.flatMap(m => [m.receita, m.despesa, m.saldo]);
+  const maxVal = Math.max(...allVals, 1);
+  const minVal = Math.min(...allVals, 0);
+  const range = maxVal - minVal || 1;
+
+  function x(i) { return pad.left + (i / (meses.length - 1 || 1)) * gW; }
+  function y(v) { return pad.top + gH - ((v - minVal) / range) * gH; }
+
+  // Grid horizontal
+  ctx.strokeStyle = "#2E2E2E";
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 4; i++) {
+    const gy = pad.top + (gH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(W - pad.right, gy); ctx.stroke();
+  }
+
+  // Linha zero se necessário
+  if (minVal < 0) {
+    ctx.strokeStyle = "#4A4744";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    const zy = y(0);
+    ctx.beginPath(); ctx.moveTo(pad.left, zy); ctx.lineTo(W - pad.right, zy); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Desenhar linhas
+  function drawLine(data, color, width) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    data.forEach((v, i) => { i === 0 ? ctx.moveTo(x(i), y(v)) : ctx.lineTo(x(i), y(v)); });
+    ctx.stroke();
+
+    // Pontos
+    data.forEach((v, i) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x(i), y(v), 3, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  drawLine(meses.map(m => m.receita), "#4CAF7D", 2);
+  drawLine(meses.map(m => m.despesa), "#E05C5C", 2);
+  drawLine(meses.map(m => m.saldo), "#C8A96E", 1.5);
+
+  // Labels mês
+  ctx.fillStyle = "#8A8480";
+  ctx.font = "10px Outfit";
+  ctx.textAlign = "center";
+  meses.forEach((m, i) => {
+    ctx.fillText(m.label, x(i), H - 8);
+  });
+
+  // Valores no último ponto
+  const last = meses[meses.length - 1];
+  ctx.font = "bold 10px Outfit";
+  ctx.textAlign = "left";
+  const lx = x(meses.length - 1) + 6;
+  ctx.fillStyle = "#4CAF7D"; ctx.fillText(fmtCurto(last.receita), Math.min(lx, W - 40), y(last.receita) - 4);
+  ctx.fillStyle = "#E05C5C"; ctx.fillText(fmtCurto(last.despesa), Math.min(lx, W - 40), y(last.despesa) + 12);
+}
+
+function fmtCurto(v) {
+  if (Math.abs(v) >= 1000) return (v/1000).toFixed(1) + "k";
+  return v.toFixed(0);
 }
 
 // ══════════════════════════════════════════════
@@ -899,38 +1038,24 @@ function renderizarCartao() {
   const d = Estado.dadosCartao;
   if (!d) return;
 
-  document.getElementById("c-vista").textContent    = fmt(d.aVista);
+  document.getElementById("c-vista").textContent = fmt(d.aVista);
   document.getElementById("c-parcelado").textContent = fmt(d.parcelado);
-  const total = (d.aVista || 0) + (d.parcelado || 0);
-  document.getElementById("c-pct").textContent = total > 0 ? ((d.parcelado / total * 100).toFixed(0) + "%") : "—";
+  const total = (d.aVista||0) + (d.parcelado||0);
+  document.getElementById("c-pct").textContent = total > 0 ? ((d.parcelado/total*100).toFixed(0)+"%") : "—";
 
-  // Faturas por banco
   const contFat = document.getElementById("c-faturas");
   if (d.faturasPorBanco && d.faturasPorBanco.length) {
-    contFat.innerHTML = d.faturasPorBanco.map(f =>
-      `<div class="fatura-card"><span class="fatura-banco">${f.banco}</span><span class="fatura-val">${fmt(f.valor)}</span></div>`
-    ).join("");
-  } else {
-    contFat.innerHTML = '<div class="vazio">Sem faturas no período</div>';
-  }
+    contFat.innerHTML = d.faturasPorBanco.map(f => `<div class="fatura-card"><span class="fatura-banco">${f.banco}</span><span class="fatura-val">${fmt(f.valor)}</span></div>`).join("");
+  } else contFat.innerHTML = '<div class="vazio">Sem faturas no período</div>';
 
-  // Fluxo de parcelas futuras
   const contFluxo = document.getElementById("c-fluxo");
   if (d.fluxoParcelas && d.fluxoParcelas.length) {
-    const maxFluxo = Math.max(...d.fluxoParcelas.map(f => f.valor));
+    const maxF = Math.max(...d.fluxoParcelas.map(f=>f.valor));
     contFluxo.innerHTML = d.fluxoParcelas.map(f => {
-      const pct = maxFluxo > 0 ? (f.valor / maxFluxo * 100) : 0;
-      return `<div class="fluxo-mes">
-        <div class="fluxo-titulo">${f.mes}</div>
-        <div class="fluxo-barra-bg">
-          <div class="fluxo-barra-fill" style="width:${pct}%"></div>
-          <div class="fluxo-val">${fmt(f.valor)}</div>
-        </div>
-      </div>`;
+      const pct = maxF>0?(f.valor/maxF*100):0;
+      return `<div class="fluxo-mes"><div class="fluxo-titulo">${f.mes}</div><div class="fluxo-barra-bg"><div class="fluxo-barra-fill" style="width:${pct}%"></div><div class="fluxo-val">${fmt(f.valor)}</div></div></div>`;
     }).join("");
-  } else {
-    contFluxo.innerHTML = '<div class="vazio">Sem parcelas futuras</div>';
-  }
+  } else contFluxo.innerHTML = '<div class="vazio">Sem parcelas futuras</div>';
 }
 
 // ══════════════════════════════════════════════
@@ -939,149 +1064,79 @@ function renderizarCartao() {
 function renderizarPatrimonio() {
   const d = Estado.dadosPatrimonio;
   if (!d) return;
-
   document.getElementById("pat-total").textContent = fmt(d.totalAtual);
-  const rend = d.rendimentoTotal || 0;
-  const rentPct = d.rentabilidadeGeral || 0;
-  document.getElementById("pat-rend").innerHTML =
-    `Rendimento: <span class="${rend >= 0 ? 'rent-pos' : 'rent-neg'}">${fmt(rend)} (${rentPct.toFixed(1)}%)</span>`;
+  const rend = d.rendimentoTotal||0;
+  document.getElementById("pat-rend").innerHTML = `Rendimento: <span class="${rend>=0?'rent-pos':'rent-neg'}">${fmt(rend)} (${(d.rentabilidadeGeral||0).toFixed(1)}%)</span>`;
 
-  // Por tipo
   const contTipos = document.getElementById("pat-tipos");
-  if (d.porTipo && d.porTipo.length) {
-    contTipos.innerHTML = d.porTipo.map(t =>
-      `<div class="tipo-row"><span>${t.tipo}</span><span>${fmt(t.valor)}</span></div>`
-    ).join("");
-  } else {
-    contTipos.innerHTML = '<div class="vazio">Sem dados</div>';
-  }
+  if (d.porTipo && d.porTipo.length) contTipos.innerHTML = d.porTipo.map(t => `<div class="tipo-row"><span>${t.tipo}</span><span>${fmt(t.valor)}</span></div>`).join("");
+  else contTipos.innerHTML = '<div class="vazio">Sem dados</div>';
 
-  // Ativos
   const contAtivos = document.getElementById("pat-ativos");
   if (d.ativos && d.ativos.length) {
     contAtivos.innerHTML = d.ativos.map(a => {
-      const rCls = (a.rendimento || 0) >= 0 ? "rent-pos" : "rent-neg";
-      return `<div class="ativo-card">
-        <div class="ativo-top"><span class="ativo-nome">${a.descricao}</span><span class="ativo-val">${fmt(a.valorAtual)}</span></div>
-        <div class="ativo-sub"><span>${a.instituicao || ""}</span><span class="${rCls}">${fmt(a.rendimento)} (${(a.rentabilidade || 0).toFixed(1)}%)</span></div>
-      </div>`;
+      const rCls = (a.rendimento||0) >= 0 ? "rent-pos" : "rent-neg";
+      return `<div class="ativo-card"><div class="ativo-top"><span class="ativo-nome">${a.descricao}</span><span class="ativo-val">${fmt(a.valorAtual)}</span></div><div class="ativo-sub"><span>${a.instituicao||""}</span><span class="${rCls}">${fmt(a.rendimento)} (${(a.rentabilidade||0).toFixed(1)}%)</span></div></div>`;
     }).join("");
-  } else {
-    contAtivos.innerHTML = '<div class="vazio">Sem ativos cadastrados</div>';
-  }
+  } else contAtivos.innerHTML = '<div class="vazio">Sem ativos cadastrados</div>';
 }
 
 // ══════════════════════════════════════════════
 //  METAS
 // ══════════════════════════════════════════════
 const METAS_CATEGORIAS = [
-  { key: "alimentacao", nome: "Alimentação", icone: "🛒" },
-  { key: "moradia",     nome: "Moradia",     icone: "🏠" },
-  { key: "transporte",  nome: "Transporte",  icone: "⛽" },
-  { key: "saude",       nome: "Saúde",       icone: "💊" },
-  { key: "pessoal",     nome: "Pessoal",     icone: "👤" },
-  { key: "lazer",       nome: "Lazer",       icone: "🎬" },
-  { key: "educacao",    nome: "Educação",    icone: "📚" },
-  { key: "pets",        nome: "Pets",        icone: "🐾" },
-  { key: "assinaturas", nome: "Assinaturas", icone: "📱" }
+  {key:"alimentacao",nome:"Alimentação",icone:"🛒"},{key:"moradia",nome:"Moradia",icone:"🏠"},
+  {key:"transporte",nome:"Transporte",icone:"⛽"},{key:"saude",nome:"Saúde",icone:"💊"},
+  {key:"pessoal",nome:"Pessoal",icone:"👤"},{key:"lazer",nome:"Lazer",icone:"🎬"},
+  {key:"educacao",nome:"Educação",icone:"📚"},{key:"pets",nome:"Pets",icone:"🐾"},
+  {key:"assinaturas",nome:"Assinaturas",icone:"📱"}
 ];
-
 function renderizarConfigMetas() {
-  const cont = document.getElementById("metas-config");
-  if (!cont) return;
-  cont.innerHTML = METAS_CATEGORIAS.map(m =>
-    `<div class="config-row">
-      <span>${m.icone}</span>
-      <label>${m.nome}</label>
-      <input type="number" id="meta-${m.key}" value="${Estado.metas[m.key] || ""}" placeholder="R$" inputmode="numeric">
-    </div>`
-  ).join("");
+  const cont = document.getElementById("metas-config"); if(!cont) return;
+  cont.innerHTML = METAS_CATEGORIAS.map(m => `<div class="config-row"><span>${m.icone}</span><label>${m.nome}</label><input type="number" id="meta-${m.key}" value="${Estado.metas[m.key]||""}" placeholder="R$" inputmode="numeric"></div>`).join("");
 }
-
 function salvarMetas() {
-  METAS_CATEGORIAS.forEach(m => {
-    const v = parseFloat(document.getElementById("meta-" + m.key).value);
-    if (v > 0) Estado.metas[m.key] = v;
-    else delete Estado.metas[m.key];
-  });
-  try { localStorage.setItem("metas_familias", JSON.stringify(Estado.metas)); } catch(e) {}
-  renderizarMetas();
-  mostrarToast("Metas salvas!");
+  METAS_CATEGORIAS.forEach(m => { const v=parseFloat(document.getElementById("meta-"+m.key).value); if(v>0) Estado.metas[m.key]=v; else delete Estado.metas[m.key]; });
+  try { localStorage.setItem("metas_familias",JSON.stringify(Estado.metas)); } catch(e){}
+  renderizarMetas(); mostrarToast("Metas salvas!");
 }
-
 function renderizarMetas() {
-  const d = Estado.dadosMes;
-  if (!d || !d.categorias) return;
-
-  let ok = 0, warn = 0, over = 0;
-  const lista = document.getElementById("metas-lista");
-  let html = "";
-
+  const d=Estado.dadosMes; if(!d||!d.categorias) return;
+  let ok=0,warn=0,over=0; const lista=document.getElementById("metas-lista"); let html="";
   METAS_CATEGORIAS.forEach(m => {
-    const limite = Estado.metas[m.key];
-    if (!limite) return;
-
-    const cat = d.categorias.find(c => c.nome.toLowerCase() === m.nome.toLowerCase());
-    const gasto = cat ? cat.valor : 0;
-    const pct = Math.min((gasto / limite * 100), 100);
-    const pctReal = (gasto / limite * 100);
-
-    let cls = "ok";
-    if (pctReal >= 100) { cls = "over"; over++; }
-    else if (pctReal >= 80) { cls = "warn"; warn++; }
-    else { ok++; }
-
-    html += `<div class="meta-card">
-      <div class="meta-top"><span class="meta-nome">${m.icone} ${m.nome}</span><span class="meta-pct ${cls}">${pctReal.toFixed(0)}%</span></div>
-      <div class="meta-track"><div class="meta-fill ${cls}" style="width:${pct}%"></div></div>
-      <div class="meta-sub"><span>${fmt(gasto)} gasto</span><span>Meta: ${fmt(limite)}</span></div>
-    </div>`;
+    const limite=Estado.metas[m.key]; if(!limite) return;
+    const cat=d.categorias.find(c=>c.nome.toLowerCase()===m.nome.toLowerCase());
+    const gasto=cat?cat.valor:0; const pct=Math.min((gasto/limite*100),100); const pctReal=(gasto/limite*100);
+    let cls="ok"; if(pctReal>=100){cls="over";over++;} else if(pctReal>=80){cls="warn";warn++;} else ok++;
+    html+=`<div class="meta-card"><div class="meta-top"><span class="meta-nome">${m.icone} ${m.nome}</span><span class="meta-pct ${cls}">${pctReal.toFixed(0)}%</span></div><div class="meta-track"><div class="meta-fill ${cls}" style="width:${pct}%"></div></div><div class="meta-sub"><span>${fmt(gasto)} gasto</span><span>Meta: ${fmt(limite)}</span></div></div>`;
   });
-
-  if (lista) lista.innerHTML = html || '<div class="vazio">Configure suas metas abaixo</div>';
-  document.getElementById("mt-ok").textContent   = ok;
-  document.getElementById("mt-warn").textContent = warn;
-  document.getElementById("mt-over").textContent = over;
+  if(lista) lista.innerHTML = html || '<div class="vazio">Configure suas metas abaixo</div>';
+  document.getElementById("mt-ok").textContent=ok;
+  document.getElementById("mt-warn").textContent=warn;
+  document.getElementById("mt-over").textContent=over;
 }
 
 // ══════════════════════════════════════════════
 //  IA
 // ══════════════════════════════════════════════
 async function pedirAnalise(tipo) {
-  const box = document.getElementById("ia-box");
-  box.innerHTML = '<div class="ia-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  const box=document.getElementById("ia-box");
+  box.innerHTML='<div class="ia-loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
   setLoading(true);
-
   try {
-    const pergunta = tipo === "livre" ? document.getElementById("ia-pergunta").value : "";
-    const res = await api("chamarIA", { tipo, pergunta }, Estado.filtros);
-    if (res.sucesso) {
-      box.textContent = res.resposta;
-    } else {
-      box.textContent = "Erro: " + (res.erro || "Não foi possível obter a análise.");
-    }
-  } catch (e) {
-    box.textContent = "Erro de conexão: " + (e.message || e);
-  } finally {
-    setLoading(false);
-  }
+    const pergunta = tipo==="livre" ? document.getElementById("ia-pergunta").value : "";
+    const res = await api("chamarIA",{tipo,pergunta},Estado.filtros);
+    if(res.sucesso) box.textContent=res.resposta;
+    else box.textContent="Erro: "+(res.erro||"Não foi possível obter a análise.");
+  } catch(e){ box.textContent="Erro de conexão: "+(e.message||e); }
+  finally { setLoading(false); }
 }
 
 // ══════════════════════════════════════════════
 //  UTILITÁRIOS
 // ══════════════════════════════════════════════
-function setLoading(ativo) {
-  const dot = document.getElementById("loadingDot");
-  if (dot) dot.classList.toggle("ativo", ativo);
-}
-
-function mostrarToast(msg) {
-  const t = document.getElementById("toast");
-  if (!t) return;
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3000);
-}
+function setLoading(a) { const d=document.getElementById("loadingDot"); if(d) d.classList.toggle("ativo",a); }
+function mostrarToast(msg) { const t=document.getElementById("toast"); if(!t) return; t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),3000); }
 </script>
 </body>
 </html>
