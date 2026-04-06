@@ -359,6 +359,20 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 .btn-login:disabled { opacity: .4; }
 .login-erro { color: var(--red); font-size: 12px; margin-top: 10px; min-height: 18px; }
+.login-users { display: flex; gap: 12px; margin-bottom: 24px; }
+.login-user-btn {
+  flex: 1; padding: 14px 10px; border-radius: 12px;
+  border: 2px solid var(--border); background: var(--surface);
+  color: var(--ink2); font-size: 14px; font-weight: 500;
+  font-family: 'Outfit', sans-serif; cursor: pointer;
+  text-align: center; transition: all .15s;
+}
+.login-user-btn.selecionado {
+  border-color: var(--accent); color: var(--accent);
+  background: rgba(200,169,110,.1);
+}
+.login-user-btn .user-icon { font-size: 24px; display: block; margin-bottom: 4px; }
+.login-info { font-size: 11px; color: var(--ink3); margin-top: 6px; text-align: center; max-width: 280px; }
 .btn-sair {
   background: none; border: 1px solid var(--border); color: var(--ink3);
   border-radius: 8px; padding: 4px 10px; font-size: 10px;
@@ -383,11 +397,39 @@ input:focus, select:focus { border-color: var(--accent); }
 <!-- ══════════ TELA DE LOGIN ══════════ -->
 <div class="tela-login" id="tela-login">
   <div class="login-logo">₿ Família</div>
-  <div class="login-sub">Digite a senha para acessar</div>
-  <input class="login-input" type="password" id="login-senha" placeholder="Senha" maxlength="20"
-         onkeydown="if(event.key==='Enter') fazerLogin()">
-  <button class="btn-login" onclick="fazerLogin()">Entrar</button>
-  <div class="login-erro" id="login-erro"></div>
+
+  <!-- Etapa 1: escolher quem é -->
+  <div id="login-step1">
+    <div class="login-sub">Quem está acessando?</div>
+    <div class="login-users">
+      <button class="login-user-btn" onclick="selecionarUsuario('Kauan',this)">
+        <span class="user-icon">👤</span>Kauan
+      </button>
+      <button class="login-user-btn" onclick="selecionarUsuario('Luciana',this)">
+        <span class="user-icon">👤</span>Luciana
+      </button>
+    </div>
+  </div>
+
+  <!-- Etapa 2: digitar senha -->
+  <div id="login-step2" style="display:none; width:100%; max-width:280px; text-align:center;">
+    <div class="login-sub" id="login-step2-titulo">Digite sua senha</div>
+    <input class="login-input" type="password" id="login-senha" placeholder="Senha" maxlength="20"
+           onkeydown="if(event.key==='Enter') fazerLogin()">
+    <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+    <div class="login-erro" id="login-erro"></div>
+  </div>
+
+  <!-- Etapa 3: criar nova senha (primeiro acesso) -->
+  <div id="login-step3" style="display:none; width:100%; max-width:280px; text-align:center;">
+    <div class="login-sub">Crie sua senha pessoal</div>
+    <input class="login-input" type="password" id="nova-senha" placeholder="Nova senha" maxlength="20">
+    <input class="login-input" type="password" id="confirma-senha" placeholder="Confirme a senha" maxlength="20"
+           onkeydown="if(event.key==='Enter') criarSenha()">
+    <button class="btn-login" onclick="criarSenha()">Criar senha</button>
+    <div class="login-erro" id="login-erro-novo"></div>
+    <div class="login-info">Essa senha será usada nos próximos acessos</div>
+  </div>
 </div>
 
 <div id="app-container" style="display:none">
@@ -623,12 +665,12 @@ input:focus, select:focus { border-color: var(--accent); }
 const GAS_URL   = "https://script.google.com/macros/s/AKfycbzk1xSp7oJCC6UDeRHJigj5u1POjXMKZj3N0ElxHxp_NGKcEFnYOm8kcYz_HRQd77pu/exec";
 const GAS_TOKEN = "7df2f5ff-fd09-4123-a316-fb4f08b2fd3b";
 
-// Hash SHA-256 da senha de acesso ao app.
-// Para gerar o hash de uma nova senha, abra o console do navegador (F12) e rode:
-//   crypto.subtle.digest('SHA-256', new TextEncoder().encode('MINHA_SENHA'))
-//     .then(h => console.log([...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')))
-// Cole o resultado aqui:
-const  = "be41b7f1fa56ba2b0582910053c86cf6ee7e311efc51300220df0918bb9a287b"; // hash de "123" — TROQUE!
+// Hash SHA-256 da senha temporária "123"
+const SENHA_TEMP_HASH = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3";
+
+// Usuários do app
+const USUARIOS = ["Kauan", "Luciana"];
+let usuarioSelecionado = null;
 
 // ══════════════════════════════════════════════
 //  LOGIN / AUTENTICAÇÃO
@@ -639,6 +681,36 @@ async function hashSenha(senha) {
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
 }
 
+function getHashSalvo(usuario) {
+  try { return localStorage.getItem("fin_senha_" + usuario); } catch(e) { return null; }
+}
+
+function selecionarUsuario(nome, el) {
+  usuarioSelecionado = nome;
+  document.querySelectorAll(".login-user-btn").forEach(b => b.classList.remove("selecionado"));
+  el.classList.add("selecionado");
+
+  const hashSalvo = getHashSalvo(nome);
+
+  if (hashSalvo) {
+    // Já tem senha personalizada — pedir login
+    document.getElementById("login-step1").style.display = "none";
+    document.getElementById("login-step2").style.display = "block";
+    document.getElementById("login-step2-titulo").textContent = nome + ", digite sua senha";
+    document.getElementById("login-senha").value = "";
+    document.getElementById("login-erro").textContent = "";
+    setTimeout(() => document.getElementById("login-senha").focus(), 100);
+  } else {
+    // Primeiro acesso — pedir senha temporária primeiro
+    document.getElementById("login-step1").style.display = "none";
+    document.getElementById("login-step2").style.display = "block";
+    document.getElementById("login-step2-titulo").textContent = nome + ", digite a senha temporária";
+    document.getElementById("login-senha").value = "";
+    document.getElementById("login-erro").textContent = "";
+    setTimeout(() => document.getElementById("login-senha").focus(), 100);
+  }
+}
+
 async function fazerLogin() {
   const campo = document.getElementById("login-senha");
   const erro  = document.getElementById("login-erro");
@@ -646,28 +718,81 @@ async function fazerLogin() {
   if (!senha) { erro.textContent = "Digite a senha"; return; }
 
   const hash = await hashSenha(senha);
-  if (hash === SENHA_HASH) {
-    try { localStorage.setItem("fin_auth", hash); } catch(e) {}
-    mostrarApp();
-    erro.textContent = "";
+  const hashSalvo = getHashSalvo(usuarioSelecionado);
+
+  if (hashSalvo) {
+    // Tem senha personalizada — validar
+    if (hash === hashSalvo) {
+      loginSucesso();
+    } else {
+      erro.textContent = "Senha incorreta";
+      campo.value = ""; campo.focus();
+    }
   } else {
-    erro.textContent = "Senha incorreta";
-    campo.value = "";
-    campo.focus();
+    // Primeiro acesso — validar contra a temporária
+    if (hash === SENHA_TEMP_HASH) {
+      // Senha temporária correta — pedir para criar nova
+      document.getElementById("login-step2").style.display = "none";
+      document.getElementById("login-step3").style.display = "block";
+      document.getElementById("nova-senha").value = "";
+      document.getElementById("confirma-senha").value = "";
+      document.getElementById("login-erro-novo").textContent = "";
+      setTimeout(() => document.getElementById("nova-senha").focus(), 100);
+    } else {
+      erro.textContent = "Senha temporária incorreta";
+      campo.value = ""; campo.focus();
+    }
   }
 }
 
+async function criarSenha() {
+  const nova     = document.getElementById("nova-senha").value.trim();
+  const confirma = document.getElementById("confirma-senha").value.trim();
+  const erro     = document.getElementById("login-erro-novo");
+
+  if (!nova) { erro.textContent = "Digite uma senha"; return; }
+  if (nova.length < 4) { erro.textContent = "Mínimo 4 caracteres"; return; }
+  if (nova !== confirma) { erro.textContent = "As senhas não coincidem"; return; }
+
+  const hash = await hashSenha(nova);
+
+  try {
+    localStorage.setItem("fin_senha_" + usuarioSelecionado, hash);
+  } catch(e) {
+    erro.textContent = "Erro ao salvar — tente novamente";
+    return;
+  }
+
+  loginSucesso();
+}
+
+function loginSucesso() {
+  try { localStorage.setItem("fin_usuario_ativo", usuarioSelecionado); } catch(e) {}
+  mostrarApp();
+}
+
 function sair() {
-  try { localStorage.removeItem("fin_auth"); } catch(e) {}
+  try { localStorage.removeItem("fin_usuario_ativo"); } catch(e) {}
+  usuarioSelecionado = null;
   document.getElementById("app-container").style.display = "none";
   document.getElementById("tela-login").style.display = "flex";
-  document.getElementById("login-senha").value = "";
+  document.getElementById("login-step1").style.display = "block";
+  document.getElementById("login-step2").style.display = "none";
+  document.getElementById("login-step3").style.display = "none";
+  document.querySelectorAll(".login-user-btn").forEach(b => b.classList.remove("selecionado"));
 }
 
 function verificarAuth() {
   try {
-    const auth = localStorage.getItem("fin_auth");
-    if (auth === ) { mostrarApp(); return; }
+    const usuario = localStorage.getItem("fin_usuario_ativo");
+    if (usuario && USUARIOS.includes(usuario)) {
+      const hashSalvo = getHashSalvo(usuario);
+      if (hashSalvo) {
+        usuarioSelecionado = usuario;
+        mostrarApp();
+        return;
+      }
+    }
   } catch(e) {}
   document.getElementById("tela-login").style.display = "flex";
   document.getElementById("app-container").style.display = "none";
@@ -676,6 +801,17 @@ function verificarAuth() {
 function mostrarApp() {
   document.getElementById("tela-login").style.display = "none";
   document.getElementById("app-container").style.display = "block";
+
+  // Pré-seleciona a pessoa logada no select
+  const selPessoa = document.getElementById("pessoa");
+  if (selPessoa && usuarioSelecionado) {
+    for (let i = 0; i < selPessoa.options.length; i++) {
+      if (selPessoa.options[i].value === usuarioSelecionado) {
+        selPessoa.selectedIndex = i; break;
+      }
+    }
+  }
+
   inicializarApp();
 }
 
