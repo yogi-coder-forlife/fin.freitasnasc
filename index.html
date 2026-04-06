@@ -628,7 +628,7 @@ const GAS_TOKEN = "7df2f5ff-fd09-4123-a316-fb4f08b2fd3b";
 //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('MINHA_SENHA'))
 //     .then(h => console.log([...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')))
 // Cole o resultado aqui:
-const SENHA_HASH = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"; // hash de "123" — TROQUE!
+const  = "be41b7f1fa56ba2b0582910053c86cf6ee7e311efc51300220df0918bb9a287b"; // hash de "123" — TROQUE!
 
 // ══════════════════════════════════════════════
 //  LOGIN / AUTENTICAÇÃO
@@ -667,7 +667,7 @@ function sair() {
 function verificarAuth() {
   try {
     const auth = localStorage.getItem("fin_auth");
-    if (auth === SENHA_HASH) { mostrarApp(); return; }
+    if (auth === ) { mostrarApp(); return; }
   } catch(e) {}
   document.getElementById("tela-login").style.display = "flex";
   document.getElementById("app-container").style.display = "none";
