@@ -330,6 +330,41 @@ input:focus, select:focus { border-color: var(--accent); }
 .btn-sync { background: var(--accent); color: #0F0F0F; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 .btn-sync:disabled { opacity: .4; cursor: default; }
 
+/* LOGIN */
+.tela-login {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg); z-index: 9999;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 40px 24px;
+}
+.login-logo { font-family: 'Playfair Display', serif; font-size: 32px; color: var(--accent); margin-bottom: 8px; }
+.login-sub { font-size: 13px; color: var(--ink3); margin-bottom: 32px; }
+.login-input {
+  width: 100%; max-width: 280px; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--ink);
+  border-radius: 12px; padding: 14px 16px; font-size: 16px;
+  font-family: 'Outfit', sans-serif; text-align: center;
+  margin-bottom: 14px; outline: none;
+  letter-spacing: 4px;
+}
+.login-input:focus { border-color: var(--accent); }
+.login-input::placeholder { letter-spacing: 0; }
+.btn-login {
+  width: 100%; max-width: 280px; padding: 14px; border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #0F0F0F; font-size: 15px; font-weight: 600;
+  font-family: 'Outfit', sans-serif; cursor: pointer;
+}
+.btn-login:disabled { opacity: .4; }
+.login-erro { color: var(--red); font-size: 12px; margin-top: 10px; min-height: 18px; }
+.btn-sair {
+  background: none; border: 1px solid var(--border); color: var(--ink3);
+  border-radius: 8px; padding: 4px 10px; font-size: 10px;
+  font-family: 'Outfit', sans-serif; cursor: pointer;
+}
+
 /* ERRO */
 .erro-conexao {
   background: #2A1A1A; border: 1px solid #5C2A2A; border-radius: 12px;
@@ -345,11 +380,24 @@ input:focus, select:focus { border-color: var(--accent); }
 </head>
 <body>
 
+<!-- ══════════ TELA DE LOGIN ══════════ -->
+<div class="tela-login" id="tela-login">
+  <div class="login-logo">₿ Família</div>
+  <div class="login-sub">Digite a senha para acessar</div>
+  <input class="login-input" type="password" id="login-senha" placeholder="Senha" maxlength="20"
+         onkeydown="if(event.key==='Enter') fazerLogin()">
+  <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+  <div class="login-erro" id="login-erro"></div>
+</div>
+
+<div id="app-container" style="display:none">
+
 <div class="app-header">
   <div class="app-logo">₿ Família</div>
   <div class="header-right">
     <div class="mes-badge" id="mesBadge">—</div>
     <div class="loading-dot" id="loadingDot"></div>
+    <button class="btn-sair" onclick="sair()">Sair</button>
   </div>
 </div>
 
@@ -400,7 +448,7 @@ input:focus, select:focus { border-color: var(--accent); }
     <select id="f-mes" onchange="aplicarFiltros()"></select>
     <select id="f-ano" onchange="aplicarFiltros()"></select>
     <select id="f-pessoa" onchange="aplicarFiltros()">
-      <option>Ambos</option><option>Kauan</option><option>Esposa</option>
+      <option>Ambos</option><option>Kauan</option><option>Luciana</option>
     </select>
   </div>
 
@@ -564,6 +612,8 @@ input:focus, select:focus { border-color: var(--accent); }
   <button class="nav-item" onclick="navegar('metas',this)"><span class="nav-icon">🎯</span>Metas</button>
 </nav>
 
+</div><!-- fim app-container -->
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -572,6 +622,62 @@ input:focus, select:focus { border-color: var(--accent); }
 // ══════════════════════════════════════════════
 const GAS_URL   = "https://script.google.com/macros/s/AKfycbzk1xSp7oJCC6UDeRHJigj5u1POjXMKZj3N0ElxHxp_NGKcEFnYOm8kcYz_HRQd77pu/exec";
 const GAS_TOKEN = "7df2f5ff-fd09-4123-a316-fb4f08b2fd3b";
+
+// Hash SHA-256 da senha de acesso ao app.
+// Para gerar o hash de uma nova senha, abra o console do navegador (F12) e rode:
+//   crypto.subtle.digest('SHA-256', new TextEncoder().encode('MINHA_SENHA'))
+//     .then(h => console.log([...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')))
+// Cole o resultado aqui:
+const SENHA_HASH = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"; // hash de "123" — TROQUE!
+
+// ══════════════════════════════════════════════
+//  LOGIN / AUTENTICAÇÃO
+// ══════════════════════════════════════════════
+async function hashSenha(senha) {
+  const data = new TextEncoder().encode(senha);
+  const buf  = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function fazerLogin() {
+  const campo = document.getElementById("login-senha");
+  const erro  = document.getElementById("login-erro");
+  const senha = campo.value.trim();
+  if (!senha) { erro.textContent = "Digite a senha"; return; }
+
+  const hash = await hashSenha(senha);
+  if (hash === SENHA_HASH) {
+    try { localStorage.setItem("fin_auth", hash); } catch(e) {}
+    mostrarApp();
+    erro.textContent = "";
+  } else {
+    erro.textContent = "Senha incorreta";
+    campo.value = "";
+    campo.focus();
+  }
+}
+
+function sair() {
+  try { localStorage.removeItem("fin_auth"); } catch(e) {}
+  document.getElementById("app-container").style.display = "none";
+  document.getElementById("tela-login").style.display = "flex";
+  document.getElementById("login-senha").value = "";
+}
+
+function verificarAuth() {
+  try {
+    const auth = localStorage.getItem("fin_auth");
+    if (auth === SENHA_HASH) { mostrarApp(); return; }
+  } catch(e) {}
+  document.getElementById("tela-login").style.display = "flex";
+  document.getElementById("app-container").style.display = "none";
+}
+
+function mostrarApp() {
+  document.getElementById("tela-login").style.display = "none";
+  document.getElementById("app-container").style.display = "block";
+  inicializarApp();
+}
 
 // ══════════════════════════════════════════════
 //  API
@@ -639,9 +745,18 @@ function atualizarSub() {
 }
 
 // ══════════════════════════════════════════════
-//  INIT
+//  INIT — verifica login primeiro
 // ══════════════════════════════════════════════
+let appInicializado = false;
+
 document.addEventListener("DOMContentLoaded", () => {
+  verificarAuth();
+});
+
+function inicializarApp() {
+  if (appInicializado) return;
+  appInicializado = true;
+
   try {
     const hoje = new Date();
     const MN = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
@@ -668,7 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => { recarregarDados(); }, 300);
   } catch (e) { console.error("Erro init:", e); }
-});
+}
 
 // ══════════════════════════════════════════════
 //  NAVEGAÇÃO
